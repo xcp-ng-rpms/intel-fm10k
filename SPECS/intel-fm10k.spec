@@ -8,10 +8,15 @@
 
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
-Version: 0.21.5
+Version: 0.26.1
 Release: 1%{?dist}
 License: GPL
-Source: https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-%{name}/archive?at=%{version}&format=tgz&prefix=driver-%{name}-%{version}#/%{name}-%{version}.tar.gz
+
+Source0: https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-fm10k/archive?at=0.26.1&format=tgz&prefix=driver-intel-fm10k-0.26.1#/intel-fm10k-0.26.1.tar.gz
+
+
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-fm10k/archive?at=0.26.1&format=tgz&prefix=driver-intel-fm10k-0.26.1#/intel-fm10k-0.26.1.tar.gz) = 96bc082a0a57cbb73400a27260764137af99c756
+
 
 BuildRequires: kernel-devel
 Provides: vendor-driver

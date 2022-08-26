@@ -1,3 +1,8 @@
+%global package_speccommit 4e850510c72de24b7dd16d6a98921e2ef03a9db2
+%global usver 0.26.1
+%global xsver 3
+%global xsrel %{xsver}%{?xscount}%{?xshash}
+%global package_srccommit 0.26.1
 %define vendor_name Intel
 %define vendor_label intel
 %define driver_name fm10k
@@ -6,19 +11,22 @@
 %define module_dir updates
 %endif
 
+## kernel_version will be set during build because then kernel-devel
+## package installs an RPM macro which sets it. This check keeps
+## rpmlint happy.
+%if %undefined kernel_version
+%define kernel_version dummy
+%endif
+
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 0.26.1
-Release: 1%{?dist}
+Release: %{?xsrel}%{?dist}
 License: GPL
-
-Source0: https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-fm10k/archive?at=0.26.1&format=tgz&prefix=driver-intel-fm10k-0.26.1#/intel-fm10k-0.26.1.tar.gz
-
-
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/driver-intel-fm10k/archive?at=0.26.1&format=tgz&prefix=driver-intel-fm10k-0.26.1#/intel-fm10k-0.26.1.tar.gz) = 96bc082a0a57cbb73400a27260764137af99c756
-
+Source0: intel-fm10k-0.26.1.tar.gz
 
 BuildRequires: kernel-devel
+%{?_cov_buildrequires}
 Provides: vendor-driver
 Requires: kernel-uname-r = %{kernel_version}
 Requires(post): /usr/sbin/depmod
@@ -29,16 +37,19 @@ Requires(postun): /usr/sbin/depmod
 version %{kernel_version}.
 
 %prep
-%autosetup -p1 -n driver-%{name}-%{version}
+%autosetup -p1 -n %{name}-%{version}
+%{?_cov_prepare}
 
 %build
-%{?cov_wrap} %{make_build} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src KSRC=/lib/modules/%{kernel_version}/build modules
+%{?_cov_wrap} %{make_build} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src KSRC=/lib/modules/%{kernel_version}/build modules
 
 %install
-%{?cov_wrap} %{__make} %{?_smp_mflags} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src INSTALL_MOD_PATH=%{buildroot} INSTALL_MOD_DIR=%{module_dir} DEPMOD=/bin/true KERNELVERSION=%{kernel_version} modules_install
+%{?_cov_wrap} %{__make} %{?_smp_mflags} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src INSTALL_MOD_PATH=%{buildroot} INSTALL_MOD_DIR=%{module_dir} DEPMOD=/bin/true KERNELVERSION=%{kernel_version} modules_install
 
 # mark modules executable so that strip-to-file can strip them
 find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chmod u+x
+
+%{?_cov_install}
 
 %post
 /sbin/depmod %{kernel_version}
@@ -54,4 +65,11 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %files
 /lib/modules/%{kernel_version}/*/*.ko
 
+%{?_cov_results_package}
+
 %changelog
+* Mon Feb 14 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 0.26.1-3
+- CP-38416: Enable static analysis
+
+* Wed Dec 02 2020 Ross Lagerwall <ross.lagerwall@citrix.com> - 0.26.1-2
+- CP-35517: Fix the build for koji

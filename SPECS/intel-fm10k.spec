@@ -21,7 +21,10 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}
 Version: 0.26.1
-Release: %{?xsrel}%{?dist}
+Release: %{?xsrel}.1%{?dist}
+# Built against new kABI after cip rebase
+Requires: xcpng-kernel-kabi = 4.19.325-cip134+
+
 License: GPL
 Source0: intel-fm10k-0.26.1.tar.gz
 
@@ -69,6 +72,9 @@ find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chm
 %{?_cov_results_package}
 
 %changelog
+* Mon Aug 31 2026 Quentin Casasnovas <quentin.casasnovas@vates.tech> - 0.26.1-3.1
+- Rebuild for kernel v4.19.325-cip134
+
 * Mon Feb 14 2022 Ross Lagerwall <ross.lagerwall@citrix.com> - 0.26.1-3
 - CP-38416: Enable static analysis
 
